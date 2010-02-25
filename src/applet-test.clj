@@ -49,6 +49,15 @@ http://java.sun.com/javase/7/docs/api/java/awt/Container.html#add%28java.awt.Com
   (let [{:keys [content ancestors position]} x]
     (cl-format writer "#<~S ~S>" (class content) position)))
 
+(defn my-pprint [object]
+  (let [old-dispatch *print-pprint-dispatch*]
+    (with-pprint-dispatch
+      (fn [x]
+        (if (= ::gui-node (type x))
+          (pr x)
+          (old-dispatch x)))
+      (pprint object))))
+
 (def natural-numbers (iterate inc 0))
 
 (defn top-of-gui-chain [gui-obj]
