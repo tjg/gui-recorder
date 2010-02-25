@@ -3,7 +3,8 @@
            (javax.swing SwingUtilities JApplet JButton)
            SwingApplet SwingSet2Applet)
   (:use clojure.contrib.swing-utils)
-  (:use clojure.contrib.pprint))
+  (:use clojure.contrib.pprint)
+  (:use clojure.contrib.seq-utils))
 
 (comment "
 Notes: 
@@ -17,7 +18,7 @@ http://java.sun.com/javase/7/docs/api/java/awt/Container.html#add%28java.awt.Com
 ")
 
 (defonce frame  (Frame. "SwingSet2 applet"))
-(defonce applet (SwingApplet.))
+#_(defonce applet (SwingApplet.))
 (defonce applet (SwingSet2Applet.))
 
 (defn pop-up-applet []
@@ -35,9 +36,9 @@ http://java.sun.com/javase/7/docs/api/java/awt/Container.html#add%28java.awt.Com
        (.pack)
        (.setVisible true)))))
 
-(pop-up-applet)
+#_(pop-up-applet)
 
-(def gc (memfn getComponents))
+(def get-components (comp vec (memfn getComponents)))
 
 (defstruct gui-node :content :ancestors :position)
 (defn make-gui-node [content ancestors position]
@@ -50,35 +51,36 @@ http://java.sun.com/javase/7/docs/api/java/awt/Container.html#add%28java.awt.Com
 
 (def natural-numbers (iterate inc 0))
 
-(defn hierarchy [gui-obj]
-  (let [node (make-gui-node gui-obj [] 0)]
-    (conj (hierarchy-helper node) node)))
+(defn top-of-gui-chain [gui-obj]
+  (let [parent (.getParent gui-obj)]
+    (if parent
+      (top-of-gui-chain parent)
+      gui-obj)))
 
 (defn hierarchy-helper [gui-node]
-  (lazy-seq
-   (let [{:keys [content ancestors position]} gui-node]
-     (if (not (isa? (class content) java.awt.Container))
-       []
-       (let [children (vec (.getComponents content))
-             children (map (fn [c counter]
-                             (make-gui-node c (conj ancestors gui-node) counter))
-                           children natural-numbers)]
-         (conj children
-               (map hierarchy-helper children)))))))
+  (let [{:keys [content ancestors position]} gui-node]
+    (if (not (isa? (class content) java.awt.Container))
+      []
+      (let [children (get-components content)
+            children (map (fn [c counter]
+                            (make-gui-node c (conj ancestors gui-node) counter))
+                          children natural-numbers)]
+        (cons gui-node
+              (map hierarchy-helper children))))))
+
+(defn hierarchy [gui-obj]
+  (let [gui-obj (top-of-gui-chain gui-obj)
+        node (make-gui-node gui-obj [] 0)]
+    (hierarchy-helper node)))
 
 (defn buttons []
-  (for [component (flatten (blah applet))
+  (for [component (flatten (hierarchy applet))
         :when (isa? (class component) javax.swing.JButton)]
     component))
 
 ;; javax.swing.text.JTextComponent javax.swing.JScrollBar
 
 
-(defn top-of-gui-chain [gui-obj]
-  (let [parent (.getParent gui-obj)]
-    (if parent
-      (top-of-gui-chain parent)
-      gui-obj)))
 
 (def dont-care
      #{;; first pass
@@ -96,20 +98,20 @@ http://java.sun.com/javase/7/docs/api/java/awt/Container.html#add%28java.awt.Com
 (defn interesting-objects []
   (let [graphics-objects (map (fn [x]
                                 (conj (ancestors (class x)) (class x)))
-                              (flatten (blah (top-of-gui-chain applet))))]
+                              (flatten (hierarchy (top-of-gui-chain applet))))]
     (map (fn [x] (clojure.set/difference x dont-care))
          graphics-objects)))
 
 
 
 
-(def jbutton (first (mapcat gc (mapcat gc (mapcat gc (.getComponents applet))))))
+#_(def jbutton (first (mapcat get-components (mapcat get-components (mapcat get-components (.getComponents applet))))))
 
-(defonce listener
+#_(defonce listener
   (add-action-listener
    jbutton
    (fn [event]
      (cl-format true "Button text: ~S~%" (.getText jbutton)))))
 
-(defn remove-listener []
+#_(defn remove-listener []
   (.removeActionListener jbutton listener))
