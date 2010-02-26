@@ -1,7 +1,9 @@
 (ns applet-test
   (:import (java.awt Graphics Color Font RenderingHints Frame GridLayout)
+           (java.awt.event AWTEventListener WindowEvent)
            (javax.swing SwingUtilities JApplet JButton)
            SwingApplet SwingSet2Applet)
+  (:use clojure.set)
   (:use clojure.contrib.swing-utils)
   (:use clojure.contrib.pprint)
   (:use clojure.contrib.seq-utils))
@@ -53,7 +55,7 @@ http://java.sun.com/javase/7/docs/api/java/awt/Container.html#add%28java.awt.Com
   (let [old-dispatch *print-pprint-dispatch*]
     (with-pprint-dispatch
       (fn [x]
-        (if (= ::gui-node (type x))
+        (if (:type (meta x))
           (pr x)
           (old-dispatch x)))
       (pprint object))))
@@ -77,10 +79,12 @@ http://java.sun.com/javase/7/docs/api/java/awt/Container.html#add%28java.awt.Com
         (cons gui-node
               (map hierarchy-helper children))))))
 
-(defn hierarchy [gui-obj]
-  (let [gui-obj (top-of-gui-chain gui-obj)
-        node (make-gui-node gui-obj [] 0)]
+(defn hierarchy-at [gui-obj]
+  (let [node (make-gui-node gui-obj [] 0)]
     (hierarchy-helper node)))
+
+(defn hierarchy [gui-obj]
+  (hierarchy-at (top-of-gui-chain gui-obj)))
 
 (defn buttons []
   (for [component (flatten (hierarchy applet))
