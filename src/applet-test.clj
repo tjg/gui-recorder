@@ -116,9 +116,28 @@ http://java.sun.com/javase/7/docs/api/java/awt/Container.html#add%28java.awt.Com
          graphics-objects)))
 
 
+(def *instrumented* (agent #{}))
 
+(defn instrument-buttons [gui-obj]
+  (let [button-nodes (filter (fn [x]
+                               (isa? (class (:content x)) javax.swing.JButton))
+                             (flatten (hierarchy gui-obj)))
+        button-nodes (set button-nodes)]
+    (doseq [node button-nodes]
+      (let [jbutton (:content node)]
+        (try (add-action-listener
+              jbutton
+              (fn [event]
+                (cl-format true "Button text: ~S~%" (.getText jbutton))))
+             (finally (send *instrumented*
+                            (fn [instrumented-nodes node]
+                              (let [instrumented-buttons (set (map :content instrumented-nodes))
+                                    button (:content node)]
+                                (if (instrumented-buttons button)
+                                  (conj instrumented-nodes node)
+                                  instrumented-nodes)))
+                            jbutton)))))))
 
-#_(def jbutton (first (mapcat get-components (mapcat get-components (mapcat get-components (.getComponents applet))))))
 
 #_(defonce listener
   (add-action-listener
