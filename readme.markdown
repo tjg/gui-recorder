@@ -1,20 +1,24 @@
 ## Status
 
-Experimental. This app is still in progress and not yet runnable.
+Still under development.
 
 ## Description
 
-This application records a user's interactions with an AWT/Swing applet, replays them, and determine whether the GUI has responded correctly and within a certain timeframe.
+This application starts up a AWT/Swing applet and:
 
-For flexibility, the user can edit her recorded interactions with (for instance) a text editor.
+* records a user's interactions
+* plays them back later
+* tests the GUI state
+
+For flexibility, the user can edit the recording.
 
 ## Use-cases
 
 * Testing conformance with an SLA (service-level agreement), with detailed uptime statistics.
-* Automated testing during development. With much less tedium.
+* Automated GUI testing during development.
 
 ## Copyright
 
 Copyright (c) Tayssir John Gabbour. All rights reserved.
 
-This will be released under a permissive license; I just have to check which is most appropriate.
+(This will be released under a permissive license; I just have to check which is most appropriate.)
