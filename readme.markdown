@@ -1,5 +1,3 @@
-# Swing Recorder
-
 ## Status
 
 Experimental. This app is still in progress and not yet runnable.
