@@ -10,10 +10,10 @@
 
 
 (defonce frame  (Frame. "SwingSet2 applet"))
-#_(defonce applet (SwingApplet.))
 (defonce applet (SwingSet2Applet.))
+#_(defonce applet (SwingApplet.))
 
-(defn pop-up-applet []
+(defn start-test-applet []
   (SwingUtilities/invokeAndWait
    (fn []
      (doto frame
@@ -28,4 +28,3 @@
        (.pack)
        (.setVisible true)))))
 
-#_(pop-up-applet)

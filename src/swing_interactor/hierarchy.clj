@@ -73,11 +73,7 @@ http://java.sun.com/javase/7/docs/api/java/awt/Container.html#add%28java.awt.Com
         :when (isa? (class component) javax.swing.JButton)]
     component))
 
-;; javax.swing.text.JTextComponent javax.swing.JScrollBar
-
-
-
-(def dont-care
+(def uninteresting-classes
      #{;; first pass
        javax.swing.JComponent java.awt.image.ImageObserver
        java.awt.Container 
@@ -94,7 +90,7 @@ http://java.sun.com/javase/7/docs/api/java/awt/Container.html#add%28java.awt.Com
   (let [graphics-objects (map (fn [x]
                                 (conj (ancestors (class x)) (class x)))
                               (flatten (hierarchy (top-of-gui-chain applet))))]
-    (map (fn [x] (clojure.set/difference x dont-care))
+    (map (fn [x] (clojure.set/difference x uninteresting-classes))
          graphics-objects)))
 
 
